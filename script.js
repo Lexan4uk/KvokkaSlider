@@ -26,10 +26,9 @@ class Gallery {
     }
     
     onClick(event) {
-        
+    
         let imgElement = event.target.closest('a').querySelector('img');
         this.gallery(imgElement);
-        document.querySelector('.gallery-holder').style.display ="none";
     }
 }
 new Gallery(gallery, imagepath);
