@@ -1,8 +1,8 @@
-const newGallery = (target, images, showNav, showThumbnail) => {
+const newGallery = (target, images, showNav, showThumbnail, showDesc) => {
     
     let thumbnail = ``;
-    let adjacentIndexes;
     let thumbImages = '';
+    let imgHolder = ``;
     // Создаём нужный холдер картинки
     const imgblock = document.querySelector("#customGallery");
     imgblock.style.transition = "opacity 0.5s ease-in-out";
@@ -10,7 +10,7 @@ const newGallery = (target, images, showNav, showThumbnail) => {
     imgblock.style.position = "fixed";
     imgblock.style.top = "0";
     imgblock.style.left = "0";
-    imgblock.style.background = "rgba(20,20,20,1)";
+    imgblock.style.background = "black";
     imgblock.style.height = "100%";
     imgblock.style.width = "100%"; 
     imgblock.style.display = "flex"; 
@@ -20,17 +20,16 @@ const newGallery = (target, images, showNav, showThumbnail) => {
 
     // Получаем индекс нажатой картинки
     const targetSrcWithoutDomain = target.src.replace(/^(https?:)?\/\/[^/]+/, '');
-    let index = images.findIndex(image => image  === targetSrcWithoutDomain);
-
+    let index = images.findIndex(image => image.path  === targetSrcWithoutDomain); 
     // Создаём нужную картинку
     const template = `
-        <div style="display:flex; align-items: center; position: relative;">
-            <span id="exit" style="position: absolute; top: 0%; right: 0; margin-right: 20px; font-size: 3.125vw; font-weight: bolder; color: #fff; cursor: pointer; user-select: none;">&times;</span>
-            <span id="prev" style="position: relative; margin-right: 20px; font-size: 5vw; font-weight: bolder; color: #fff; cursor: pointer; user-select: none;">&lt;</span>
-            <div style="width: 60vw; height: 33.75vw; display: flex; justify-content: center; position: relative;">
-                <img class="bigImg" src="${images[index]}" style="position: relative; border: 3px solid rgb(206, 205, 205); border-radius: 5px; object-fit: cover; width:auto; height: auto;"/>
+        <div id="main-holder" style="display:flex; align-items: center; width: 100%; justify-content: space-between;">
+            <span id="exit" style="position: absolute; top: 0; right: 0; margin-right: 30px; font-size: 3.5vw; color: #696969; cursor: pointer; user-select: none;">&times;</span>
+            <span id="prev" style="position: relative; margin-left: 30px; font-size: 5vw; color: #696969; cursor: pointer; user-select: none;">&lt;</span>
+            <div id="image-holder" style="max-width: auto; max-height: auto; display: flex; justify-content: center; position: relative;">
+                <img class="bigImg" src="${images[index].path}" style="position: relative; object-fit: cover; width: 73.75vw; height: auto;"/>
             </div>
-            <span id="next" style="position: relative;  margin-left: 20px; font-size: 5vw; font-weight: bolder; color: #fff; cursor: pointer; user-select: none;">&gt;</span>
+            <span id="next" style="position: relative;  margin-right: 30px; font-size: 5vw; color: #696969; cursor: pointer; user-select: none;">&gt;</span>
         </div>
     `;
 
@@ -38,18 +37,20 @@ const newGallery = (target, images, showNav, showThumbnail) => {
 
     // Отключение навигации
     if (showNav === false) {
-        imgblock.querySelector("span").style.display = "none";
+        imgblock.querySelector("#main-holder").style["justify-content"] = "center";
+        imgblock.querySelector("#exit").style.display = "none";
         imgblock.querySelector("#prev").style.display = "none";
         imgblock.querySelector("#next").style.display = "none";
     }
 
+    // Добавление миниатюры
     if (showThumbnail === true) {
         
         thumbnail = `
-            <div style="margin-top: 20px; height: auto; display: flex; gap: 20px">
+            <div style="margin-top: 32px; height: auto; display: flex; gap: 7px">
         `
-        for (let i = 0; i < 5; i++) {
-            thumbnail += `<img class="thumbImg" style="max-height: 200px; width:10vw; border: 3px solid rgb(206, 205, 205); border-radius: 5px; object-fit: cover;"/>`;
+        for (let i = 0; i < images.length; i++) {
+            thumbnail += `<img class="thumbImg" src="${images[i].path}" style="height: 7.05vw; width: 7.05vw; object-fit: cover;"/>`;
         }
         
         thumbnail += `
@@ -59,7 +60,24 @@ const newGallery = (target, images, showNav, showThumbnail) => {
         thumbImages = document.querySelectorAll('.thumbImg');
         updateImage()
     }
-     
+    
+    // Добавление описания
+    if (showDesc === true) {
+        imgHolder = document.querySelector("#image-holder") 
+        imgHolder.innerHTML += `
+            <h1 id="img-desc" style="position: absolute; 
+            bottom: 0; 
+            width: 100%; 
+            z-index: 1; 
+            background-color: #000000b0; 
+            color: white; 
+            padding-top: 10px; 
+            padding-bottom: 10px;
+            padding-left: 40px; 
+            font-family: 'Inter'; font-size: 21px; font-weight: 200;">${images[index].desc}</h1>
+        `
+    }
+
     // Закрытие на крестик + закрытие на Esc
     imgblock.querySelector("span").onclick = () => {
         imgblock.style = "opacity: 0";
@@ -98,50 +116,23 @@ const newGallery = (target, images, showNav, showThumbnail) => {
 
     function updateImage() {
         const imageElement = imgblock.querySelector("img.bigImg");
-        imageElement.src = images[index];
+        imageElement.src = images[index].path;
+        // Чтоб не ломался, если показывать описание
+        try{
+            const imageDesc = document.querySelector("#img-desc");
+            imageDesc.textContent = images[index].desc;
+        }
+        catch{}
 
-        try {
-            // Перерисовка миниатюры
-            if (window.innerWidth > 1100){
-                adjacentIndexes = getAdjacentIndexes(index, images.length);
+        const thumbElement = imgblock.querySelectorAll("img.thumbImg");
+        thumbElement.forEach((element, indexElement) => {
+            if (indexElement == index) {
+                element.style.filter = 'brightness(0.5)';
             }
             else {
-                adjacentIndexes = getAdjacentIndexes(index, images.length - 2);
+                element.style.filter = 'none';
             }
-            
-            thumbImages.forEach((img, indexArr) => {
-                const imageIndex = adjacentIndexes[indexArr];
-                img.src = images[imageIndex];
-                // Жирная рамка центральный картинки 
-                if (imageIndex === index)
-                {
-                    img.style.border = "8px solid rgb(206, 205, 205)";
-                }
-            });
-        }
-        catch {}// Чтоб не засоряло лог ошибками, если миниатюра отключена
-        
+        });
     }
-    
-    
-}
-
-// Индексы для прорисовки в миниатюре
-function getAdjacentIndexes(selectedIndex, totalIndexes) {
-    const result = [];
-    
-    for (let i = -2; i <= 2; i++) {
-        let index = selectedIndex + i;
-        
-        if (index < 0) {
-            index = totalIndexes + index;
-        } else if (index >= totalIndexes) {
-            index = index - totalIndexes;
-        }
-        
-        result.push(index);
-    }
-    
-    return result;
 }
 export { newGallery }
