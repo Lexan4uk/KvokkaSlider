@@ -2,32 +2,34 @@ import { imagepath } from "./content.js"
 import { newGallery } from "./customGallery.js"
 
 
-// Находим элемент img по его id
-document.getElementById('first-img').src = imagepath[0];
-document.getElementById('second-img').src = imagepath[1];
-document.getElementById('third-img').src = imagepath[2];
-document.getElementById('fourth-img').src = imagepath[3];
-document.getElementById('fifth-img').src = imagepath[4];
-document.getElementById('sixth-img').src = imagepath[5];
+// Заполнение картинок
+const imgElements = document.querySelectorAll('img');
+imgElements.forEach((img, index) => {
+    img.src = imagepath[index];
+});
 
 // Мудренный слушатель кликов по a, которые находятся в контейнере с id gallery
 class Gallery {
     constructor(elem) {
         // Показывать ли навигацию
         this.showNav = true;
-
+        // Показывать ли миниматюру
+        this.showThumbnail = true;
+    
         this.imagepath = imagepath;
-        elem.onclick = this.onClick.bind(this); // (*)
+        elem.onclick = this.onClick.bind(this);
     }
     
     // Реагирует только на элементы с data-action="gallery" 
     gallery(imgElement) {
-        newGallery(imgElement, this.imagepath, this.showNav);
+        newGallery(imgElement, this.imagepath, this.showNav, this.showThumbnail);
     }
     
     onClick(event) {
+        
         let imgElement = event.target.closest('a').querySelector('img');
         this.gallery(imgElement);
+        document.querySelector('.gallery-holder').style.display ="none";
     }
 }
 new Gallery(gallery, imagepath);
