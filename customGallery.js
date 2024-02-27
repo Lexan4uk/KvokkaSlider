@@ -1,39 +1,36 @@
-const newGallery = (target, images, showNav, showThumbnail, showDesc) => {
+const newGallery = (target, showNav, showThumbnail, showDesc) => {
     
     let thumbnail = ``;
     let thumbImages = '';
     let imgHolder = ``;
-    // Создаём нужный холдер картинки
-    const imgblock = document.querySelector("#customGallery");
-    imgblock.style.transition = "opacity 0.5s ease-in-out";
-    imgblock.style.opacity = "1";
-    imgblock.style.position = "fixed";
-    imgblock.style.top = "0";
-    imgblock.style.left = "0";
-    imgblock.style.background = "black";
-    imgblock.style.height = "100%";
-    imgblock.style.width = "100%"; 
-    imgblock.style.display = "flex"; 
-    imgblock.style["flex-direction"] = "column";
-    imgblock.style["align-items"] = "center";
-    imgblock.style["justify-content"] = "center";
 
-    // Получаем индекс нажатой картинки
-    const targetSrcWithoutDomain = target.src.replace(/^(https?:)?\/\/[^/]+/, '');
-    let index = images.findIndex(image => image.path  === targetSrcWithoutDomain); 
+    const targets = Array.from(document.querySelectorAll(`[data-action="${target.dataset.action}"]`));
+    const images = targets.map(target => ({
+        path: target.dataset.href,
+        desc: target.dataset.desc
+    }));
+
+    let index = images.findIndex(image => image.path  === target.dataset.href); 
     // Создаём нужную картинку
     const template = `
-        <div id="main-holder" style="display:flex; align-items: center; width: 100%; justify-content: space-between;">
-            <span id="exit" style="position: absolute; top: 0; right: 0; margin-right: 30px; font-size: 3.5vw; color: #696969; cursor: pointer; user-select: none;">&times;</span>
-            <span id="prev" style="position: relative; margin-left: 30px; font-size: 5vw; color: #696969; cursor: pointer; user-select: none;">&lt;</span>
-            <div id="image-holder" style="max-width: auto; max-height: auto; display: flex; justify-content: center; position: relative;">
-                <img class="bigImg" src="${images[index].path}" style="position: relative; object-fit: cover; width: 73.75vw; height: auto;"/>
+        <div id="customGallery" style="opacity: 0; position: fixed; top: 0; left: 0; background-color: black; height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s ease-in-out;">
+            <div id="main-holder" style="display:flex; align-items: center; width: 100%; justify-content: space-between;">
+                <span id="exit" style="position: absolute; top: 0; right: 0; margin-right: 30px; font-size: 3.5vw; color: #696969; cursor: pointer; user-select: none;">&times;</span>
+                <span id="prev" style="position: relative; margin-left: 30px; font-size: 5vw; color: #696969; cursor: pointer; user-select: none;">&lt;</span>
+                <div id="image-holder" style="max-width: auto; max-height: auto; display: flex; justify-content: center; position: relative;">
+                    <img class="bigImg" src="${images[index].path}" style="position: relative; object-fit: cover; width: 73.75vw; height: auto;"/>
+                </div>
+                <span id="next" style="position: relative;  margin-right: 30px; font-size: 5vw; color: #696969; cursor: pointer; user-select: none;">&gt;</span>
             </div>
-            <span id="next" style="position: relative;  margin-right: 30px; font-size: 5vw; color: #696969; cursor: pointer; user-select: none;">&gt;</span>
         </div>
     `;
+    document.body.insertAdjacentHTML('beforeend', template);
 
-    imgblock.innerHTML = template;
+    const imgblock = document.querySelector('#customGallery');
+
+    setTimeout(() => {
+        imgblock.style.opacity = "1";
+    }, 1); //микрозадержка, без неё нет нанимации при закрытии
 
     // Отключение навигации
     if (showNav === false) {
@@ -80,15 +77,20 @@ const newGallery = (target, images, showNav, showThumbnail, showDesc) => {
 
     // Закрытие на крестик + закрытие на Esc
     imgblock.querySelector("span").onclick = () => {
-        imgblock.style = "opacity: 0";
-        imgblock.innerHTML = ``;
+        imgblock.style.opacity = "0";
+        setTimeout(() => {
+            imgblock.remove(); 
+        }, 500);
         
     }
 
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
-            imgblock.style = "opacity: 0";
-            imgblock.innerHTML = ``;
+            imgblock.style.opacity = "0";
+            setTimeout(() => {
+                imgblock.remove();
+            }, 500);
+            
         }
     });
 
@@ -116,6 +118,7 @@ const newGallery = (target, images, showNav, showThumbnail, showDesc) => {
 
     function updateImage() {
         const imageElement = imgblock.querySelector("img.bigImg");
+
         imageElement.src = images[index].path;
         // Чтоб не ломался, если показывать описание
         try{
