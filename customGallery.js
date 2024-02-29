@@ -17,7 +17,7 @@ const newGallery = (target, showNav, showThumbnail, showDesc) => {
             <div id="main-holder" style="display:flex; align-items: center; width: 100%; justify-content: space-between;">
                 <span id="exit" style="position: absolute; top: 0; right: 0; margin-right: 30px; font-size: 3.5vw; color: #696969; cursor: pointer; user-select: none;">&times;</span>
                 <span id="prev" style="position: relative; margin-left: 30px; font-size: 5vw; color: #696969; cursor: pointer; user-select: none;">&lt;</span>
-                <div id="image-holder" style="max-width: auto; max-height: auto; display: flex; justify-content: center; position: relative;">
+                <div id="image-holder" style="display: flex; justify-content: center; position: relative;">
                     <img class="bigImg" src="${images[index].path}" style="position: relative; object-fit: cover; width: 73.75vw; height: auto;"/>
                 </div>
                 <span id="next" style="position: relative;  margin-right: 30px; font-size: 5vw; color: #696969; cursor: pointer; user-select: none;">&gt;</span>
@@ -44,18 +44,30 @@ const newGallery = (target, showNav, showThumbnail, showDesc) => {
     if (showThumbnail === true) {
         
         thumbnail = `
-            <div style="margin-top: 32px; height: auto; display: flex; gap: 7px">
+            <div id="thumbHolder" style="margin-top: 32px; display: flex; width: 73.75vw; overflow: hidden">
         `
-        for (let i = 0; i < images.length; i++) {
-            thumbnail += `<img class="thumbImg" src="${images[i].path}" style="height: 7.05vw; width: 7.05vw; object-fit: cover;"/>`;
-        }
+            for (let i = 0; i < images.length; i++) {
+                thumbnail += `<img class="thumbImg" src="${images[i].path}" style="aspect-ratio: 1/1; width:10%; object-fit: cover; padding: 0 3.5px; cursor: pointer;"/>`;
+            }
+        
         
         thumbnail += `
             </div>
         `;
         imgblock.innerHTML += thumbnail;
+        if (images.length <= 9)
+            imgblock.querySelector("#thumbHolder").style["justify-content"] = "center";
+
+        updateImage(); // Для затемнения изображения при первой загрузке
         thumbImages = document.querySelectorAll('.thumbImg');
-        updateImage()
+        thumbImages.forEach(image => {
+            image.addEventListener('click', (event) => {
+                index = Array.from(thumbImages).indexOf(event.currentTarget);
+                updateImage()
+  
+            });
+        });
+
     }
     
     // Добавление описания
@@ -126,8 +138,10 @@ const newGallery = (target, showNav, showThumbnail, showDesc) => {
             imageDesc.textContent = images[index].desc;
         }
         catch{}
+        
 
         const thumbElement = imgblock.querySelectorAll("img.thumbImg");
+
         thumbElement.forEach((element, indexElement) => {
             if (indexElement == index) {
                 element.style.filter = 'brightness(0.5)';
@@ -135,7 +149,9 @@ const newGallery = (target, showNav, showThumbnail, showDesc) => {
             else {
                 element.style.filter = 'none';
             }
+            
         });
+        
     }
 }
 export { newGallery }

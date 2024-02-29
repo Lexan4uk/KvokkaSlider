@@ -26,3 +26,4 @@ class Gallery {
 }
 new Gallery(gallery);
 
+
