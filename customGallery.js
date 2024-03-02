@@ -132,7 +132,7 @@ const newGallery = (target, showNav, showThumbnail, showDesc) => {
         const imageElement = imgblock.querySelector("img.bigImg");
 
         imageElement.src = images[index].path;
-        // Чтоб не ломался, если показывать описание
+        // Чтоб не ломался, если показывать описание = false
         try{
             const imageDesc = document.querySelector("#img-desc");
             imageDesc.textContent = images[index].desc;
@@ -145,6 +145,10 @@ const newGallery = (target, showNav, showThumbnail, showDesc) => {
         thumbElement.forEach((element, indexElement) => {
             if (indexElement == index) {
                 element.style.filter = 'brightness(0.5)';
+                
+                const thumbHolder = document.querySelector("#thumbHolder");
+                const offsetLeft = element.offsetLeft;
+                thumbHolder.scrollTo({top: 0, left: offsetLeft - thumbHolder.offsetLeft})
             }
             else {
                 element.style.filter = 'none';
